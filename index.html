@@ -1,0 +1,1439 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🎮 럭키드로우 - Lucky Draw</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/galmuri/dist/galmuri.css" rel="stylesheet">
+    <style>
+        :root {
+            --mario-red: #e52521;
+            --mario-blue: #0066cc;
+            --mario-yellow: #ffcc00;
+            --mario-green: #00cc00;
+            --mario-brown: #8b4513;
+            --bg-dark: #1a1a2e;
+            --bg-darker: #0f0f1e;
+            --pixel-white: #ffffff;
+            --pixel-black: #000000;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            image-rendering: pixelated;
+            image-rendering: -moz-crisp-edges;
+            image-rendering: crisp-edges;
+        }
+
+        body {
+            min-height: 100vh;
+            background: linear-gradient(180deg, #87CEEB 0%, #98D8C8 50%, #87CEEB 100%);
+            font-family: 'Galmuri11', 'Press Start 2P', cursive;
+            overflow-x: hidden;
+            position: relative;
+            font-size: 12px;
+        }
+
+        /* Pixelated background pattern */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.03) 2px, rgba(0,0,0,0.03) 4px),
+                repeating-linear-gradient(90deg, transparent, transparent 2px, rgba(0,0,0,0.03) 2px, rgba(0,0,0,0.03) 4px);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .container {
+            position: relative;
+            z-index: 1;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        /* Header */
+        .header {
+            text-align: center;
+            margin-bottom: 2rem;
+            position: relative;
+        }
+
+        .logo {
+            max-width: 300px;
+            width: 100%;
+            height: auto;
+            margin: 0 auto 1.5rem;
+            display: block;
+            filter: drop-shadow(4px 4px 0px var(--pixel-black));
+            image-rendering: pixelated;
+            image-rendering: -moz-crisp-edges;
+            image-rendering: crisp-edges;
+        }
+
+        .title {
+            font-size: clamp(1.5rem, 6vw, 3rem);
+            color: var(--mario-red);
+            text-shadow: 
+                4px 4px 0px var(--pixel-black),
+                6px 6px 0px var(--pixel-black);
+            letter-spacing: 0.1em;
+            margin-bottom: 1rem;
+            animation: titleBounce 0.5s ease-in-out infinite alternate;
+        }
+
+        @keyframes titleBounce {
+            from { transform: translateY(0); }
+            to { transform: translateY(-5px); }
+        }
+
+        .subtitle {
+            font-size: 0.8rem;
+            color: var(--mario-blue);
+            line-height: 1.8;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 0.8rem 1.2rem;
+            border: 3px solid var(--pixel-black);
+            box-shadow: 3px 3px 0px var(--pixel-black);
+            display: inline-block;
+        }
+
+        /* Mode Selection Screen */
+        .mode-selection {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 2rem;
+            margin-bottom: 2rem;
+            padding: 2rem;
+            background: rgba(255, 255, 255, 0.9);
+            border: 4px solid var(--pixel-black);
+            box-shadow: 
+                8px 8px 0px var(--pixel-black),
+                inset 0 0 0 2px var(--mario-yellow);
+            max-width: 600px;
+            width: 100%;
+            min-height: 320px;
+        }
+
+        .mode-selection.hidden {
+            display: none;
+        }
+
+        .mode-title {
+            font-size: 1rem;
+            color: var(--mario-blue);
+            margin-bottom: 1.5rem;
+            background: transparent;
+            padding: 0;
+            border: none;
+            box-shadow: none;
+            display: block;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            text-shadow: 2px 2px 0px var(--pixel-black);
+        }
+
+        .mode-buttons {
+            display: flex;
+            gap: 1.5rem;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .mode-btn {
+            font-family: 'Galmuri11', 'Press Start 2P', cursive;
+            font-size: 0.7rem;
+            padding: 1rem 1.5rem;
+            border: 3px solid var(--pixel-black);
+            background: var(--mario-yellow);
+            color: var(--pixel-black);
+            cursor: pointer;
+            transition: all 0.1s;
+            box-shadow: 
+                3px 3px 0px var(--pixel-black);
+            text-transform: uppercase;
+            min-width: 150px;
+        }
+
+        .mode-btn:hover {
+            transform: translate(2px, 2px);
+            box-shadow: 
+                2px 2px 0px var(--pixel-black);
+        }
+
+        .mode-btn:active {
+            transform: translate(4px, 4px);
+            box-shadow: none;
+        }
+
+        .mode-btn.selected {
+            background: var(--mario-green);
+            color: var(--pixel-white);
+        }
+
+        /* Number Range Input */
+        .number-range-section {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            gap: 1rem;
+            margin-top: 1rem;
+            padding: 1.5rem;
+            background: rgba(255, 255, 255, 0.95);
+            border: 3px solid var(--pixel-black);
+            box-shadow: 4px 4px 0px var(--pixel-black);
+            width: 100%;
+        }
+
+        .number-range-section.show {
+            display: flex;
+        }
+
+        .range-label {
+            font-size: 0.8rem;
+            color: var(--pixel-black);
+            background: rgba(255, 255, 255, 0.95);
+            padding: 0.8rem 1rem;
+            border: 2px solid var(--pixel-black);
+            box-shadow: 2px 2px 0px var(--pixel-black);
+            display: inline-block;
+        }
+
+        .range-input-container {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .range-input {
+            font-family: 'Galmuri11', 'Press Start 2P', cursive;
+            font-size: 1rem;
+            padding: 1rem;
+            border: 3px solid var(--pixel-black);
+            background: var(--pixel-white);
+            color: var(--pixel-black);
+            width: 150px;
+            text-align: center;
+            box-shadow: inset 2px 2px 0px var(--pixel-black);
+        }
+
+        .range-input:focus {
+            outline: none;
+            box-shadow: 
+                inset 2px 2px 0px var(--pixel-black),
+                0 0 0 3px var(--mario-yellow);
+        }
+
+        .confirm-btn {
+            font-family: 'Galmuri11', 'Press Start 2P', cursive;
+            font-size: 0.7rem;
+            padding: 0.8rem 1.5rem;
+            border: 3px solid var(--pixel-black);
+            background: var(--mario-green);
+            color: var(--pixel-white);
+            cursor: pointer;
+            transition: all 0.1s;
+            box-shadow: 3px 3px 0px var(--pixel-black);
+        }
+
+        .confirm-btn:hover {
+            transform: translate(1px, 1px);
+            box-shadow: 2px 2px 0px var(--pixel-black);
+        }
+
+        .confirm-btn:active {
+            transform: translate(3px, 3px);
+            box-shadow: none;
+        }
+
+        /* Upload Section */
+        .upload-section {
+            display: none;
+            background: rgba(255, 255, 255, 0.9);
+            border: 4px solid var(--pixel-black);
+            padding: 2rem;
+            margin-bottom: 2rem;
+            width: 100%;
+            max-width: 500px;
+            box-shadow: 
+                8px 8px 0px var(--pixel-black),
+                inset 0 0 0 2px var(--mario-blue);
+        }
+
+        .upload-section.show {
+            display: block;
+        }
+
+        .upload-label {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            cursor: pointer;
+            padding: 2rem;
+            border: 3px dashed var(--mario-blue);
+            background: rgba(0, 102, 204, 0.1);
+            transition: all 0.1s;
+        }
+
+        .upload-label:hover {
+            border-color: var(--mario-red);
+            background: rgba(229, 37, 33, 0.1);
+        }
+
+        .upload-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            filter: drop-shadow(2px 2px 0px var(--pixel-black));
+        }
+
+        .upload-text {
+            color: var(--pixel-black);
+            font-size: 0.8rem;
+            text-align: center;
+            line-height: 1.8;
+            margin-bottom: 0.5rem;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 0.8rem 1rem;
+            border: 2px solid var(--pixel-black);
+            box-shadow: 2px 2px 0px var(--pixel-black);
+            display: inline-block;
+        }
+
+        .upload-hint {
+            color: var(--pixel-black);
+            font-size: 0.6rem;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 0.5rem 0.8rem;
+            border: 2px solid var(--pixel-black);
+            display: inline-block;
+            margin-top: 0.5rem;
+        }
+
+        #csvInput {
+            display: none;
+        }
+
+        .file-name {
+            color: var(--mario-green);
+            margin-top: 1rem;
+            font-size: 0.7rem;
+            text-align: center;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 0.8rem 1rem;
+            border: 2px solid var(--pixel-black);
+            box-shadow: 2px 2px 0px var(--pixel-black);
+            display: inline-block;
+        }
+
+        /* Slot Machine */
+        .slot-machine {
+            display: none;
+            background: rgba(255, 255, 255, 0.95);
+            border: 6px solid var(--pixel-black);
+            padding: 2rem;
+            margin-bottom: 2rem;
+            width: 100%;
+            max-width: 800px;
+            box-shadow: 
+                12px 12px 0px var(--pixel-black),
+                inset 0 0 0 3px var(--mario-yellow);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .slot-machine.show {
+            display: block;
+        }
+
+        /* Slot machine top label removed */
+
+        .slots-container {
+            display: flex;
+            gap: 1.5rem;
+            justify-content: center;
+            margin: 3rem 0 2rem;
+            flex-wrap: wrap;
+        }
+
+        .slot {
+            background: linear-gradient(180deg, #2a2a2a 0%, #1a1a1a 50%, #0a0a0a 100%);
+            border: 4px solid var(--mario-blue);
+            width: 280px;
+            height: 180px;
+            overflow: hidden;
+            position: relative;
+            box-shadow: 
+                inset 0 0 20px rgba(0, 0, 0, 0.8),
+                4px 4px 0px var(--pixel-black);
+        }
+
+        .slot::before,
+        .slot::after {
+            content: '';
+            position: absolute;
+            left: 0;
+            right: 0;
+            height: 50px;
+            z-index: 10;
+            pointer-events: none;
+        }
+
+        .slot::before {
+            top: 0;
+            background: linear-gradient(to bottom, rgba(0,0,0,0.95), transparent);
+        }
+
+        .slot::after {
+            bottom: 0;
+            background: linear-gradient(to top, rgba(0,0,0,0.95), transparent);
+        }
+
+        .slot-label {
+            position: absolute;
+            top: -25px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: var(--pixel-black);
+            font-size: 0.7rem;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 0.5rem 1rem;
+            border: 2px solid var(--pixel-black);
+            box-shadow: 2px 2px 0px var(--pixel-black);
+            white-space: nowrap;
+        }
+
+        .slot-reel {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            width: 100%;
+        }
+
+        .slot-item {
+            height: 180px;
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+            text-align: center;
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+
+        .slot-item .name,
+        .slot-item .number {
+            font-size: 2rem;
+            color: var(--mario-yellow);
+            filter: drop-shadow(0 0 8px var(--mario-yellow));
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 250px;
+        }
+
+        .slot-item .department {
+            font-size: 2rem;
+            color: var(--mario-green);
+            filter: drop-shadow(0 0 8px var(--mario-green));
+            white-space: nowrap;
+            max-width: 260px;
+            display: inline-block;
+        }
+
+        /* Buttons */
+        .button-container {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .btn {
+            font-family: 'Galmuri11', 'Press Start 2P', cursive;
+            font-size: 0.8rem;
+            font-weight: normal;
+            padding: 1rem 2rem;
+            border: 4px solid var(--pixel-black);
+            cursor: pointer;
+            transition: all 0.1s;
+            text-transform: uppercase;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 4px 4px 0px var(--pixel-black);
+        }
+
+        .btn-spin {
+            background: var(--mario-red);
+            color: var(--pixel-white);
+        }
+
+        .btn-spin:hover:not(:disabled) {
+            transform: translate(2px, 2px);
+            box-shadow: 2px 2px 0px var(--pixel-black);
+        }
+
+        .btn-spin:active:not(:disabled) {
+            transform: translate(4px, 4px);
+            box-shadow: none;
+        }
+
+        .btn-spin:disabled {
+            background: #666;
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+
+        .btn-reset {
+            background: var(--mario-blue);
+            color: var(--pixel-white);
+        }
+
+        .btn-reset:hover {
+            transform: translate(2px, 2px);
+            box-shadow: 2px 2px 0px var(--pixel-black);
+        }
+
+        .btn-reset:active {
+            transform: translate(4px, 4px);
+            box-shadow: none;
+        }
+
+        /* Winner Popup Overlay */
+        .popup-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 2000;
+            justify-content: center;
+            align-items: center;
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        .popup-overlay.show {
+            display: flex;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        /* Winner Display Popup */
+        .winner-display {
+            display: none;
+            text-align: center;
+            padding: 3rem;
+            background: linear-gradient(180deg, #87CEEB 0%, #98D8C8 100%);
+            border: 6px solid var(--pixel-black);
+            box-shadow: 
+                12px 12px 0px var(--pixel-black),
+                inset 0 0 0 4px var(--mario-yellow);
+            animation: popupBounce 0.5s ease-out, winnerPulse 0.5s ease-in-out infinite alternate;
+            max-width: 90%;
+            width: 500px;
+            position: relative;
+        }
+
+        @keyframes popupBounce {
+            0% { transform: scale(0.5); opacity: 0; }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        @keyframes winnerPulse {
+            from {
+                box-shadow: 
+                    12px 12px 0px var(--pixel-black),
+                    inset 0 0 0 4px var(--mario-yellow);
+            }
+            to {
+                box-shadow: 
+                    12px 12px 0px var(--pixel-black),
+                    inset 0 0 0 4px var(--mario-red),
+                    0 0 30px var(--mario-yellow);
+            }
+        }
+
+        .winner-display.show {
+            display: block;
+        }
+
+        .winner-label {
+            font-size: 1.2rem;
+            color: var(--pixel-black);
+            margin-bottom: 1.5rem;
+            background: var(--mario-yellow);
+            padding: 1rem 2rem;
+            border: 4px solid var(--pixel-black);
+            box-shadow: 4px 4px 0px var(--pixel-black);
+            display: inline-block;
+        }
+
+        .winner-name,
+        .winner-number {
+            font-size: 2.5rem;
+            color: var(--mario-red);
+            margin-bottom: 1rem;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 1.5rem 2rem;
+            border: 4px solid var(--pixel-black);
+            box-shadow: 5px 5px 0px var(--pixel-black);
+            display: block;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .winner-dept {
+            font-size: 1.2rem;
+            color: var(--mario-blue);
+            background: rgba(255, 255, 255, 0.95);
+            padding: 1rem 1.5rem;
+            border: 3px solid var(--pixel-black);
+            box-shadow: 3px 3px 0px var(--pixel-black);
+            display: inline-block;
+            margin-bottom: 1.5rem;
+        }
+
+        .popup-close-btn {
+            font-family: 'Galmuri11', 'Press Start 2P', cursive;
+            font-size: 0.7rem;
+            padding: 1rem 2rem;
+            border: 3px solid var(--pixel-black);
+            background: var(--mario-green);
+            color: var(--pixel-white);
+            cursor: pointer;
+            transition: all 0.1s;
+            box-shadow: 4px 4px 0px var(--pixel-black);
+            margin-top: 1rem;
+        }
+
+        .popup-close-btn:hover {
+            transform: translate(2px, 2px);
+            box-shadow: 2px 2px 0px var(--pixel-black);
+        }
+
+        .popup-close-btn:active {
+            transform: translate(4px, 4px);
+            box-shadow: none;
+        }
+
+        /* Winners List */
+        .winners-list {
+            display: none;
+            width: 100%;
+            max-width: 600px;
+            margin-top: 2rem;
+        }
+
+        .winners-list.show {
+            display: block;
+        }
+
+        .winners-title {
+            font-size: 1rem;
+            color: var(--pixel-black);
+            margin-bottom: 1rem;
+            text-align: center;
+            background: var(--mario-green);
+            padding: 1rem 1.5rem;
+            border: 3px solid var(--pixel-black);
+            box-shadow: 4px 4px 0px var(--pixel-black);
+            display: inline-block;
+        }
+
+        .winners-grid {
+            display: grid;
+            gap: 0.5rem;
+        }
+
+        .winner-item {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1rem;
+            background: rgba(255, 255, 255, 0.9);
+            border: 3px solid var(--pixel-black);
+            box-shadow: 3px 3px 0px var(--pixel-black);
+        }
+
+        .winner-item .winner-number {
+            font-size: 1rem;
+            color: var(--pixel-black);
+            min-width: 50px;
+            background: var(--mario-yellow);
+            padding: 0.3rem 0.5rem;
+            border: 2px solid var(--pixel-black);
+        }
+
+        .winner-info {
+            flex: 1;
+        }
+
+        .winner-info-name,
+        .winner-info-number {
+            color: var(--pixel-black);
+            font-size: 0.9rem;
+            margin-bottom: 0.3rem;
+        }
+
+        .winner-info-dept {
+            color: var(--mario-blue);
+            font-size: 0.7rem;
+        }
+
+        /* Participant Count */
+        .participant-count {
+            color: var(--mario-green);
+            font-size: 0.7rem;
+            margin-top: 1rem;
+            text-shadow: 
+                2px 2px 0px var(--pixel-black),
+                0 0 5px rgba(255, 255, 255, 0.8);
+            text-align: center;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 0.8rem 1rem;
+            border: 2px solid var(--pixel-black);
+            box-shadow: 2px 2px 0px var(--pixel-black);
+            display: inline-block;
+        }
+
+        /* Pixel Confetti */
+        .confetti {
+            position: fixed;
+            width: 8px;
+            height: 8px;
+            pointer-events: none;
+            z-index: 1000;
+            animation: confettiFall 3s ease-out forwards;
+            image-rendering: pixelated;
+        }
+
+        @keyframes confettiFall {
+            0% {
+                transform: translateY(-100vh) rotate(0deg);
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(100vh) rotate(720deg);
+                opacity: 0;
+            }
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .slots-container {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .slot {
+                width: 100%;
+                max-width: 280px;
+            }
+
+            .btn {
+                font-size: 0.7rem;
+                padding: 0.8rem 1.5rem;
+            }
+
+            .title {
+                font-size: 1.5rem;
+            }
+        }
+
+        /* Spinning state */
+        .spinning .slot {
+            border-color: var(--mario-yellow);
+            box-shadow: 
+                inset 0 0 30px rgba(255, 204, 0, 0.3),
+                4px 4px 0px var(--pixel-black),
+                0 0 20px rgba(255, 204, 0, 0.5);
+        }
+
+        .spinning .slot-item .name,
+        .spinning .slot-item .number,
+        .spinning .slot-item .department {
+            animation: textFlicker 0.05s linear infinite;
+        }
+
+        @keyframes textFlicker {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+
+        /* Light flash effect */
+        .light-flash {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(255, 255, 255, 0.5);
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.1s;
+        }
+
+        .slot-machine.flash .light-flash {
+            animation: flash 0.3s ease-out;
+        }
+
+        @keyframes flash {
+            0% { opacity: 1; }
+            100% { opacity: 0; }
+        }
+
+        /* Back button */
+        .back-btn {
+            font-family: 'Galmuri11', 'Press Start 2P', cursive;
+            font-size: 0.6rem;
+            padding: 0.8rem 1.5rem;
+            border: 3px solid var(--pixel-black);
+            background: var(--mario-brown);
+            color: var(--pixel-white);
+            cursor: pointer;
+            transition: all 0.1s;
+            box-shadow: 3px 3px 0px var(--pixel-black);
+            margin-bottom: 1rem;
+        }
+
+        .back-btn:hover {
+            transform: translate(1px, 1px);
+            box-shadow: 2px 2px 0px var(--pixel-black);
+        }
+
+        .back-btn:active {
+            transform: translate(3px, 3px);
+            box-shadow: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <img src="logo.png" alt="Lucky Draw Logo" class="logo" id="gameLogo">
+            <h1 class="title">LUCKY DRAW</h1>
+        </header>
+
+        <!-- Mode Selection Screen -->
+        <section class="mode-selection" id="modeSelection">
+            <div class="mode-title">CHOOSE GAME MODE</div>
+            <div class="mode-buttons">
+                <button class="mode-btn" id="numberModeBtn">🔢 숫자 뽑기</button>
+                <button class="mode-btn" id="nameModeBtn">👤 이름 뽑기</button>
+            </div>
+            <div class="number-range-section" id="numberRangeSection">
+                <div class="range-label">최대 숫자를 입력하세요 (1 ~ 9999)</div>
+                <div class="range-input-container">
+                    <input type="number" class="range-input" id="maxNumberInput" min="1" max="9999" value="100" placeholder="100">
+                    <button class="confirm-btn" id="confirmRangeBtn">확인</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Upload Section (for name mode) -->
+        <section class="upload-section" id="uploadSection">
+            <button class="back-btn" id="backToModeBtn">← 모드 선택으로</button>
+            <label class="upload-label" for="csvInput">
+                <div class="upload-icon">📁</div>
+                <div class="upload-text">CSV 파일을 업로드하세요</div>
+                <div class="upload-hint">1열: 이름, 2열: 소속</div>
+            </label>
+            <input type="file" id="csvInput" accept=".csv">
+            <div class="file-name" id="fileName"></div>
+            <div class="participant-count" id="participantCount"></div>
+        </section>
+
+        <!-- Slot Machine -->
+        <section class="slot-machine" id="slotMachine">
+            <button class="back-btn" id="backToSetupBtn">← 설정으로</button>
+            <div class="light-flash"></div>
+            <div class="slots-container" id="slotsContainer">
+                <!-- Will be dynamically generated based on mode -->
+            </div>
+
+            <div class="button-container">
+                <button class="btn btn-spin" id="spinBtn" disabled>🎰 START!</button>
+                <button class="btn btn-reset" id="resetBtn">🔄 RESET</button>
+            </div>
+        </section>
+
+        <!-- Winner Popup Overlay -->
+        <div class="popup-overlay" id="popupOverlay">
+            <section class="winner-display" id="winnerDisplay">
+                <div class="winner-label">🎉 축하합니다! 🎉</div>
+                <div class="winner-name" id="winnerName"></div>
+                <div class="winner-dept" id="winnerDept"></div>
+                <button class="popup-close-btn" id="popupCloseBtn">확인</button>
+            </section>
+        </div>
+
+        <!-- Winners List -->
+        <section class="winners-list" id="winnersList">
+            <h3 class="winners-title">🏆 당첨자 목록</h3>
+            <div class="winners-grid" id="winnersGrid"></div>
+        </section>
+    </div>
+
+    <script>
+        // State
+        let gameMode = null; // 'number' or 'name'
+        let maxNumber = 100;
+        let participants = [];
+        let remainingParticipants = [];
+        let remainingNumbers = [];
+        let winners = [];
+        let isSpinning = false;
+        let spinInterval = null;
+
+        // DOM Elements
+        const modeSelection = document.getElementById('modeSelection');
+        const numberModeBtn = document.getElementById('numberModeBtn');
+        const nameModeBtn = document.getElementById('nameModeBtn');
+        const numberRangeSection = document.getElementById('numberRangeSection');
+        const maxNumberInput = document.getElementById('maxNumberInput');
+        const confirmRangeBtn = document.getElementById('confirmRangeBtn');
+        const uploadSection = document.getElementById('uploadSection');
+        const backToModeBtn = document.getElementById('backToModeBtn');
+        const backToSetupBtn = document.getElementById('backToSetupBtn');
+        const csvInput = document.getElementById('csvInput');
+        const fileName = document.getElementById('fileName');
+        const participantCount = document.getElementById('participantCount');
+        const slotMachine = document.getElementById('slotMachine');
+        const slotsContainer = document.getElementById('slotsContainer');
+        const spinBtn = document.getElementById('spinBtn');
+        const resetBtn = document.getElementById('resetBtn');
+        const popupOverlay = document.getElementById('popupOverlay');
+        const winnerDisplay = document.getElementById('winnerDisplay');
+        const winnerName = document.getElementById('winnerName');
+        const winnerDept = document.getElementById('winnerDept');
+        const popupCloseBtn = document.getElementById('popupCloseBtn');
+        const winnersList = document.getElementById('winnersList');
+        const winnersGrid = document.getElementById('winnersGrid');
+
+        // Mode Selection
+        numberModeBtn.addEventListener('click', () => {
+            gameMode = 'number';
+            numberModeBtn.classList.add('selected');
+            nameModeBtn.classList.remove('selected');
+            numberRangeSection.classList.add('show');
+        });
+
+        nameModeBtn.addEventListener('click', () => {
+            gameMode = 'name';
+            nameModeBtn.classList.add('selected');
+            numberModeBtn.classList.remove('selected');
+            numberRangeSection.classList.remove('show');
+            // Show CSV upload section
+            modeSelection.classList.add('hidden');
+            uploadSection.classList.add('show');
+            // Clear participant count text
+            participantCount.textContent = '';
+            fileName.textContent = '';
+        });
+
+        // Confirm number range
+        confirmRangeBtn.addEventListener('click', () => {
+            const value = parseInt(maxNumberInput.value);
+            if (value >= 1 && value <= 9999) {
+                maxNumber = value;
+                initializeNumberMode();
+            } else {
+                alert('1부터 9999까지의 숫자를 입력해주세요!');
+            }
+        });
+
+        maxNumberInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                confirmRangeBtn.click();
+            }
+        });
+
+        // Back buttons
+        backToModeBtn.addEventListener('click', () => {
+            uploadSection.classList.remove('show');
+            slotMachine.classList.remove('show');
+            modeSelection.classList.remove('hidden');
+            resetGame();
+        });
+
+        backToSetupBtn.addEventListener('click', () => {
+            slotMachine.classList.remove('show');
+            if (gameMode === 'number') {
+                modeSelection.classList.remove('hidden');
+            } else {
+                uploadSection.classList.add('show');
+            }
+            resetGame();
+        });
+
+        // Initialize Number Mode
+        function initializeNumberMode() {
+            remainingNumbers = Array.from({ length: maxNumber }, (_, i) => i + 1);
+            modeSelection.classList.add('hidden');
+            slotMachine.classList.add('show');
+            createNumberSlots();
+            spinBtn.disabled = false;
+            participantCount.textContent = `✅ 1부터 ${maxNumber}까지의 숫자가 준비되었습니다!`;
+        }
+
+        // Create number slots
+        function createNumberSlots() {
+            slotsContainer.innerHTML = `
+                <div class="slot-wrapper">
+                    <div class="slot-label">숫자</div>
+                    <div class="slot" id="numberSlot">
+                        <div class="slot-reel" id="numberReel">
+                            <div class="slot-item">
+                                <span class="number">?</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Parse CSV
+        function parseCSV(text) {
+            const lines = text.trim().split('\n');
+            const result = [];
+            
+            for (let i = 0; i < lines.length; i++) {
+                const line = lines[i].trim();
+                if (!line) continue;
+                
+                let parts = line.split(',');
+                if (parts.length < 2) {
+                    parts = line.split('\t');
+                }
+                if (parts.length < 2) {
+                    parts = line.split(';');
+                }
+                
+                if (parts.length >= 2) {
+                    const name = parts[0].trim().replace(/^["']|["']$/g, '');
+                    const dept = parts[1].trim().replace(/^["']|["']$/g, '');
+                    if (name && dept) {
+                        result.push({ name, dept });
+                    }
+                }
+            }
+            
+            return result;
+        }
+
+        // File upload handler
+        csvInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            fileName.textContent = `📄 ${file.name}`;
+            
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                participants = parseCSV(event.target.result);
+                remainingParticipants = [...participants];
+                
+                if (participants.length > 0) {
+                    participantCount.textContent = `✅ ${participants.length}명의 참가자가 등록되었습니다!`;
+                    spinBtn.disabled = false;
+                    createNameSlots();
+                    updateReels();
+                } else {
+                    participantCount.textContent = '⚠️ 올바른 CSV 형식이 아닙니다.';
+                    spinBtn.disabled = true;
+                }
+            };
+            reader.readAsText(file);
+        });
+
+        // Create name slots
+        function createNameSlots() {
+            slotsContainer.innerHTML = `
+                <div class="slot-wrapper">
+                    <div class="slot-label">이름</div>
+                    <div class="slot" id="nameSlot">
+                        <div class="slot-reel" id="nameReel">
+                            <div class="slot-item">
+                                <span class="name">?</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="slot-wrapper">
+                    <div class="slot-label">소속</div>
+                    <div class="slot" id="deptSlot">
+                        <div class="slot-reel" id="deptReel">
+                            <div class="slot-item">
+                                <span class="department">?</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            uploadSection.classList.remove('show');
+            slotMachine.classList.add('show');
+        }
+
+        // Update reels
+        function updateReels() {
+            if (gameMode === 'number') {
+                updateNumberReel();
+            } else {
+                updateNameReels();
+            }
+        }
+
+        function updateNumberReel() {
+            if (remainingNumbers.length === 0) return;
+            
+            const randomIndex = Math.floor(Math.random() * remainingNumbers.length);
+            const number = remainingNumbers[randomIndex];
+            
+            const numberReel = document.getElementById('numberReel');
+            if (numberReel) {
+                numberReel.innerHTML = `
+                    <div class="slot-item">
+                        <span class="number">${number}</span>
+                    </div>
+                `;
+            }
+        }
+
+        // 텍스트 길이에 따라 폰트 크기 자동 조절
+        function adjustDeptFontSize(element, maxWidth = 260) {
+            if (!element) return;
+            
+            const baseFontSize = 2; // rem (이름과 동일)
+            const minFontSize = 0.8; // rem (최소 폰트 크기)
+            
+            // 먼저 기본 크기로 설정
+            element.style.fontSize = baseFontSize + 'rem';
+            
+            // 텍스트가 넘치는지 확인하고 폰트 크기 줄이기
+            let currentSize = baseFontSize;
+            while (element.scrollWidth > maxWidth && currentSize > minFontSize) {
+                currentSize -= 0.1;
+                element.style.fontSize = currentSize + 'rem';
+            }
+        }
+
+        function updateNameReels() {
+            if (remainingParticipants.length === 0) return;
+            
+            const randomIndex = Math.floor(Math.random() * remainingParticipants.length);
+            const person = remainingParticipants[randomIndex];
+            
+            const nameReel = document.getElementById('nameReel');
+            const deptReel = document.getElementById('deptReel');
+            
+            if (nameReel) {
+                nameReel.innerHTML = `
+                    <div class="slot-item">
+                        <span class="name">${person.name}</span>
+                    </div>
+                `;
+            }
+            
+            if (deptReel) {
+                deptReel.innerHTML = `
+                    <div class="slot-item">
+                        <span class="department">${person.dept}</span>
+                    </div>
+                `;
+                // 폰트 크기 자동 조절
+                const deptElement = deptReel.querySelector('.department');
+                adjustDeptFontSize(deptElement);
+            }
+        }
+
+        // Spin animation
+        function startSpin() {
+            if (isSpinning) return;
+            
+            if (gameMode === 'number' && remainingNumbers.length === 0) return;
+            if (gameMode === 'name' && remainingParticipants.length === 0) return;
+            
+            isSpinning = true;
+            spinBtn.disabled = true;
+            winnerDisplay.classList.remove('show');
+            
+            slotMachine.classList.add('spinning');
+            
+            let spinCount = 0;
+            const totalSpins = 30 + Math.floor(Math.random() * 20);
+            
+            spinInterval = setInterval(() => {
+                updateReels();
+                spinCount++;
+                
+                if (spinCount > totalSpins - 10) {
+                    clearInterval(spinInterval);
+                    slowDownSpin(totalSpins - spinCount);
+                }
+            }, 50);
+        }
+
+        function slowDownSpin(remaining) {
+            let count = 0;
+            const slowInterval = setInterval(() => {
+                updateReels();
+                count++;
+                
+                if (count >= remaining + 5) {
+                    clearInterval(slowInterval);
+                    finishSpin();
+                }
+            }, 100 + count * 50);
+        }
+
+        function finishSpin() {
+            slotMachine.classList.remove('spinning');
+            
+            let winner;
+            
+            if (gameMode === 'number') {
+                const winnerIndex = Math.floor(Math.random() * remainingNumbers.length);
+                const number = remainingNumbers[winnerIndex];
+                winner = { number, type: 'number' };
+                
+                const numberReel = document.getElementById('numberReel');
+                if (numberReel) {
+                    numberReel.innerHTML = `
+                        <div class="slot-item">
+                            <span class="number">${number}</span>
+                        </div>
+                    `;
+                }
+                
+                remainingNumbers.splice(winnerIndex, 1);
+            } else {
+                const winnerIndex = Math.floor(Math.random() * remainingParticipants.length);
+                winner = remainingParticipants[winnerIndex];
+                winner.type = 'name';
+                
+                const nameReel = document.getElementById('nameReel');
+                const deptReel = document.getElementById('deptReel');
+                
+                if (nameReel) {
+                    nameReel.innerHTML = `
+                        <div class="slot-item">
+                            <span class="name">${winner.name}</span>
+                        </div>
+                    `;
+                }
+                
+                if (deptReel) {
+                    deptReel.innerHTML = `
+                        <div class="slot-item">
+                            <span class="department">${winner.dept}</span>
+                        </div>
+                    `;
+                    // 폰트 크기 자동 조절
+                    const deptElement = deptReel.querySelector('.department');
+                    adjustDeptFontSize(deptElement);
+                }
+                
+                remainingParticipants.splice(winnerIndex, 1);
+            }
+            
+            slotMachine.classList.add('flash');
+            setTimeout(() => slotMachine.classList.remove('flash'), 300);
+            
+            if (gameMode === 'number') {
+                winnerName.textContent = winner.number;
+                winnerName.className = 'winner-number';
+                winnerDept.style.display = 'none';
+            } else {
+                winnerName.textContent = winner.name;
+                winnerName.className = 'winner-name';
+                winnerDept.textContent = winner.dept;
+                winnerDept.style.display = 'inline-block';
+            }
+            
+            // Show popup
+            popupOverlay.classList.add('show');
+            winnerDisplay.classList.add('show');
+            winners.push(winner);
+            updateWinnersList();
+            
+            createConfetti();
+            
+            isSpinning = false;
+            
+            if (gameMode === 'number') {
+                participantCount.textContent = `🎯 남은 숫자: ${remainingNumbers.length}개`;
+                if (remainingNumbers.length === 0) {
+                    spinBtn.disabled = true;
+                    participantCount.textContent = '🎊 모든 추첨이 완료되었습니다!';
+                } else {
+                    spinBtn.disabled = false;
+                }
+            } else {
+                participantCount.textContent = `🎯 남은 참가자: ${remainingParticipants.length}명`;
+                if (remainingParticipants.length === 0) {
+                    spinBtn.disabled = true;
+                    participantCount.textContent = '🎊 모든 추첨이 완료되었습니다!';
+                } else {
+                    spinBtn.disabled = false;
+                }
+            }
+        }
+
+        function updateWinnersList() {
+            if (winners.length > 0) {
+                winnersList.classList.add('show');
+            }
+            
+            winnersGrid.innerHTML = winners.map((w, i) => {
+                if (w.type === 'number') {
+                    return `
+                        <div class="winner-item">
+                            <span class="winner-number">#${i + 1}</span>
+                            <div class="winner-info">
+                                <div class="winner-info-number">${w.number}</div>
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    return `
+                        <div class="winner-item">
+                            <span class="winner-number">#${i + 1}</span>
+                            <div class="winner-info">
+                                <div class="winner-info-name">${w.name}</div>
+                                <div class="winner-info-dept">${w.dept}</div>
+                            </div>
+                        </div>
+                    `;
+                }
+            }).join('');
+        }
+
+        function createConfetti() {
+            const colors = ['#e52521', '#0066cc', '#ffcc00', '#00cc00', '#8b4513'];
+            
+            for (let i = 0; i < 80; i++) {
+                setTimeout(() => {
+                    const confetti = document.createElement('div');
+                    confetti.className = 'confetti';
+                    confetti.style.left = Math.random() * 100 + 'vw';
+                    confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+                    confetti.style.width = '8px';
+                    confetti.style.height = '8px';
+                    document.body.appendChild(confetti);
+                    
+                    setTimeout(() => confetti.remove(), 4000);
+                }, i * 25);
+            }
+        }
+
+        function resetGame() {
+            if (gameMode === 'number') {
+                remainingNumbers = Array.from({ length: maxNumber }, (_, i) => i + 1);
+            } else {
+                remainingParticipants = [...participants];
+            }
+            
+            winners = [];
+            isSpinning = false;
+            
+            // Close popup
+            popupOverlay.classList.remove('show');
+            winnerDisplay.classList.remove('show');
+            winnersList.classList.remove('show');
+            
+            if (gameMode === 'number') {
+                if (remainingNumbers.length > 0) {
+                    spinBtn.disabled = false;
+                    participantCount.textContent = `✅ 1부터 ${maxNumber}까지의 숫자가 준비되었습니다!`;
+                }
+                const numberReel = document.getElementById('numberReel');
+                if (numberReel) {
+                    numberReel.innerHTML = '<div class="slot-item"><span class="number">?</span></div>';
+                }
+            } else {
+                if (participants.length > 0) {
+                    spinBtn.disabled = false;
+                    participantCount.textContent = `✅ ${participants.length}명의 참가자가 등록되었습니다!`;
+                }
+                const nameReel = document.getElementById('nameReel');
+                const deptReel = document.getElementById('deptReel');
+                if (nameReel) {
+                    nameReel.innerHTML = '<div class="slot-item"><span class="name">?</span></div>';
+                }
+                if (deptReel) {
+                    deptReel.innerHTML = '<div class="slot-item"><span class="department">?</span></div>';
+                }
+            }
+        }
+
+        // Event listeners
+        spinBtn.addEventListener('click', startSpin);
+        resetBtn.addEventListener('click', resetGame);
+
+        // Popup close button
+        popupCloseBtn.addEventListener('click', closePopup);
+        popupOverlay.addEventListener('click', (e) => {
+            if (e.target === popupOverlay) {
+                closePopup();
+            }
+        });
+
+        function closePopup() {
+            popupOverlay.classList.remove('show');
+            winnerDisplay.classList.remove('show');
+        }
+
+        // Keyboard shortcut
+        document.addEventListener('keydown', (e) => {
+            if (e.code === 'Space' && !spinBtn.disabled && !popupOverlay.classList.contains('show')) {
+                e.preventDefault();
+                startSpin();
+            }
+            if (e.code === 'Escape' && popupOverlay.classList.contains('show')) {
+                closePopup();
+            }
+            if (e.code === 'Enter' && popupOverlay.classList.contains('show')) {
+                closePopup();
+            }
+        });
+
+        // Initialize
+        winnersList.classList.remove('show');
+
+        // Handle logo image load
+        const gameLogo = document.getElementById('gameLogo');
+        if (gameLogo) {
+            gameLogo.addEventListener('error', function() {
+                // Hide logo if image fails to load
+                this.style.display = 'none';
+            });
+        }
+    </script>
+</body>
+</html>
