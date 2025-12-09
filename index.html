@@ -186,6 +186,35 @@
             color: var(--pixel-white);
         }
 
+        .mode-btn-wrapper {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .mode-tooltip {
+            position: absolute;
+            bottom: -45px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.85);
+            color: var(--pixel-white);
+            font-size: 0.55rem;
+            padding: 0.6rem 0.8rem;
+            border-radius: 4px;
+            white-space: nowrap;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.2s ease;
+            z-index: 100;
+        }
+
+        .mode-btn-wrapper:hover .mode-tooltip {
+            opacity: 1;
+            visibility: visible;
+        }
+
         /* Number Range Input */
         .number-range-section {
             display: none;
@@ -856,8 +885,14 @@
         <section class="mode-selection" id="modeSelection">
             <div class="mode-title">게임 모드를 선택해주세요.</div>
             <div class="mode-buttons">
-                <button class="mode-btn" id="numberModeBtn">🔢 숫자 뽑기</button>
-                <button class="mode-btn" id="nameModeBtn">👤 이름 뽑기</button>
+                <div class="mode-btn-wrapper">
+                    <button class="mode-btn" id="numberModeBtn">🔢 숫자 뽑기</button>
+                    <span class="mode-tooltip">최대 숫자를 정하고 범위 내에 랜덤한 1개의 숫자를 뽑아요</span>
+                </div>
+                <div class="mode-btn-wrapper">
+                    <button class="mode-btn" id="nameModeBtn">👤 이름 뽑기</button>
+                    <span class="mode-tooltip">CSV 파일을 업로드해 지정된 사람 중 1명을 뽑아요</span>
+                </div>
             </div>
             <div class="number-range-section" id="numberRangeSection">
                 <div class="range-label">최대 숫자를 입력하세요 (1 ~ 9999)</div>
