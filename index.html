@@ -833,18 +833,14 @@
 
         /* Footer */
         .footer {
-            position: fixed;
-            bottom: 0;
-            left: 0;
             width: 100%;
             text-align: center;
-            padding: 1rem;
+            padding: 1.5rem 1rem;
+            margin-top: 1rem;
             color: var(--pixel-black);
-            font-size: 1.2rem;
+            font-size: 0.9rem;
             opacity: 0.6;
             letter-spacing: 0.02em;
-            background: transparent;
-            z-index: 10;
         }
     </style>
 </head>
@@ -908,16 +904,16 @@
             </section>
         </div>
 
+        <footer class="footer">
+            <p>© 2025 우아한형제들 Developer Relations</p>
+        </footer>
+
         <!-- Winners List -->
         <section class="winners-list" id="winnersList">
             <h3 class="winners-title">🏆 당첨자 목록</h3>
             <div class="winners-grid" id="winnersGrid"></div>
         </section>
     </div>
-
-    <footer class="footer">
-        <p>© 2025 우아한형제들 Developer Relations</p>
-    </footer>
 
     <script>
         // State
